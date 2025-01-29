@@ -1,0 +1,129 @@
+<style>
+  body {
+    text-align: center;
+    margin: 10px;
+    font-family: 'Lato';
+  }
+
+  #canvas {
+    width: 100vw;
+    height: 40vw;
+    background-color: white;
+    position: relative;
+  }
+
+  button {
+    color: white;
+    background: orange;
+    border: none;
+    padding: 10px;
+    font-weight: 300;
+    font-size: 1.2em;
+    font-family: 'Lato';
+    margin: 10px;
+    cursor: pointer;
+    outline: none;
+  }
+</style>
+
+<h1>Creating Stacks in Matter.js</h1>
+<button id="add-button"></button>
+<div class="test" id="canvas"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+<script>
+  const addButton = document.querySelector('#add-button');
+  const matterContainer = document.querySelector('#canvas');
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'absolute';
+  canvas.style.left = 0;
+  canvas.style.top = 0;
+  canvas.width = matterContainer.clientWidth * devicePixelRatio;
+  canvas.height = matterContainer.clientHeight * devicePixelRatio;
+  canvas.style.width = `${matterContainer.clientWidth}px`;
+  canvas.style.height = `${matterContainer.clientHeight}px`;
+  matterContainer.appendChild(canvas);
+  console.log(matterContainer.clientWidth);
+
+  console.log(canvas);
+
+  // module aliases
+  const { Engine, Render, Runner, Bodies, Composites, Composite, Mouse, MouseConstraint } = Matter;
+
+
+  // create an engine
+  let engine = Engine.create();
+
+  // create a renderer
+  let render = Render.create({
+    canvas: canvas,
+    engine: engine,
+    options: {
+      background: 'transparent',
+      wireframes: false,
+      width: matterContainer.clientWidth,
+      height: matterContainer.clientHeight,
+    },
+  });
+  const getRandomAngle = () => {
+    const minMaxAngle = 10;
+    const type = Math.random() < 0.5 ? -1 : 1;
+    return (Math.random() * 10 - minMaxAngle) * type * (Math.PI / 180);
+  };
+
+  const createObject = () => {
+    const stack = Composites.stack(150, -1000, 5, 6, 200, 40, (x, y) => {
+
+      return Bodies.rectangle(x, y, 241, 85, {
+        angle: getRandomAngle(),
+        isStatic: false,
+        render: {
+          sprite: {
+            texture: '\plate.webp', // Replace with your image path
+            xScale: 1,
+            yScale: 1,
+          },
+        },
+      });
+    });
+
+    Composite.add(engine.world, stack);
+  };
+
+  // create ground
+  let ground = Bodies.rectangle(
+    matterContainer.clientWidth / 2,
+    matterContainer.clientHeight,
+    matterContainer.clientWidth,
+    100,
+    { isStatic: true }
+  );
+
+  // add all of the bodies to the world
+  Composite.add(engine.world, [ground]);
+
+  // run the renderer
+  Render.run(render);
+
+  // create runner
+  let runner = Runner.create();
+
+  // run the engine
+  Runner.run(runner, engine);
+
+  addButton.addEventListener('click', createObject);
+
+  let mouse = Mouse.create(render.canvas);
+  let mouseConstraint = MouseConstraint.create(engine, {
+    mouse: mouse,
+    constraint: {
+      stiffness: 0.2,
+      render: {
+        visible: false,
+      },
+    },
+  });
+
+  Composite.add(engine.world, mouseConstraint);
+  createObject();
+</script>
