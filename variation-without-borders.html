@@ -152,7 +152,6 @@
 
 <h1>Creating Stacks in Matter.js</h1>
 <button id="add-button" class="btn-secondary"><span> Click This to Add Plates </span></button>
-<button class="btn-secondary"><span> Shop now </span></button>
 <div class="test" id="canvas">
   <div class="background">
     <img src="background.webp" alt="" />
@@ -206,34 +205,37 @@
     let i = 0;
     const stack = Composites.stack(-50, -600, no_of_Rows, no_of_Plate, row_gap, 0, (x, y) => {
       let sprite = {
-        // texture: '\plate.webp', // Replace with your image path
+        texture: '\plate.webp', // Replace with your image path
         xScale: 0.5,
         yScale: 0.5,
-        yOffset: 0.1,
+        yOffset : 0.1,
       };
 
+      if (i % 2 == 1) {
+        sprite = 'asd';
+      }
       return Bodies.rectangle(x, y, width_of_palte, height_of_plate, {
         isStatic: false,
         angle: getRandomAngle(),
         render: {
           sprite: sprite,
         },
-        friction: 1,
-        frictionAir: 0.02,
+        friction: 0.4,
+        frictionAir: 0.01,
         restitution: 0.1,
-        density: 0.9,
+        density: 1,
       });
     });
-
-    const walls = Composites.stack(-55, 0, no_of_Rows + 1, 1, width_of_Wall, 2, function (x, y) {
-      return Bodies.rectangle(x, y, 1, matterContainer.clientHeight * 2, {
-        isStatic: true,
-        render: {
-          fillStyle: 'rgba(0,0,0,)',
-        },
-      });
-    });
-    Composite.add(engine.world, walls);
+    //No Walls
+    // const walls = Composites.stack(-55, 0, no_of_Rows + 1, 1, width_of_Wall, 0, function (x, y) {
+    //   return Bodies.rectangle(x, y, 2, matterContainer.clientHeight * 2, {
+    //     isStatic: true,
+    //     render: {
+    //       fillStyle: 'rgba(0,0,0,)',
+    //     },
+    //   });
+    // });
+    // Composite.add(engine.world, walls);
 
     Composite.add(engine.world, stack);
   };
@@ -254,7 +256,7 @@
   });
 
   let rightWall = Bodies.rectangle(
-    matterContainer.clientWidth + 200,
+    (matterContainer.clientWidth + 200) ,
     matterContainer.clientHeight / 2,
     40,
     matterContainer.clientHeight * 5,

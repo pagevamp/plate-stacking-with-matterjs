@@ -1,0 +1,833 @@
+
+
+<script src="{{ 'matter.min.js' | asset_url }}" defer></script>
+
+<script>
+function initSTFCalculator(sectionId) {
+  const container = document.querySelector(`#stf-calculator-${sectionId}`);
+  if(container) {
+
+    const foodCanvasId = `food-canvas-${sectionId}`;
+  
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const devicePixelRatio = isAndroid ? Math.min(window.devicePixelRatio, 2) : window.devicePixelRatio || 1;
+
+    function calculatePoundValueHeight() {
+      let poundValueHeight = parseInt(container.querySelector('.pound-value')?.clientHeight);
+      container.style.setProperty('--span-height', `${poundValueHeight}px`);
+    }
+    
+    const foodData = [
+      {% for food in shop.metaobjects.stf_calculator_fiber_content.values %}
+        {
+          name: "{{ food.food }}",
+          solubleFiber: {{ food.soluble_fiber }},
+          isSmallSize: {{ food.is_the_food_size_small | default: false }},
+          isRectangularShape: {{ food.is_the_food_shape_rectangular | default: false }},
+          images: [
+            {% for image in food.food_images.value %}
+              {% if food.is_the_food_shape_rectangular %}
+                "{{ image | image_url: width: 550, height: 375 }}"
+              {% else %}
+                "{{ image | image_url: width: 375, height: 375 }}"
+              {% endif %}
+              {% if forloop.last == false %},{% endif %}
+            {% endfor %}
+          ]
+        }{% if forloop.last == false %},{% endif %}
+      {% endfor %}
+    ];
+  
+    // Populate the select dropdown
+    const foodSelect = container.querySelector(`#food-item-${sectionId}`);
+
+    if(foodData.length > 0) {
+      foodData.forEach((food, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = food.name;
+        foodSelect.appendChild(option);
+      });
+    }
+  
+    // Update labels based on selected values
+    function updateLabels() {
+      const weekInputs = container.querySelectorAll(".m-stf-calculator__switch-pack--week .m-stf-calculator__switch-pack__input");
+      const monthInputs = container.querySelectorAll(".m-stf-calculator__switch-pack--months .m-stf-calculator__switch-pack__input");
+
+      if(weekInputs.length > 0) {
+        weekInputs.forEach(input => {
+          const label = container.querySelector(`label[for="${input.id}"] .unit`);
+          label.textContent = input.checked ? (input.value === "1" ? " day / week" : " days / week") : "";
+        });
+      }
+  
+      if(monthInputs.length > 0) {
+        monthInputs.forEach(input => {
+          const label = container.querySelector(`label[for="${input.id}"] .unit`);
+          label.textContent = input.checked ? (input.value === "1" ? " month" : " months") : "";
+        });
+      }
+    }
+  
+    // Local Variables
+    let foodBodies = [];
+    let lastFoodCount = 0;
+  
+    // Initialize the Matter.js simulation
+    const initMatter = () => {
+      const { Engine, Render, Runner, Bodies, Body, Vector, Composite, Mouse, MouseConstraint, Events } = Matter;
+      const matterContainer = container.querySelector('.m-stf-calculator__result');
+      const THICCNESS = 400;
+      
+      const canvas = document.createElement('canvas');
+      canvas.id = `food-canvas-${sectionId}`;
+      canvas.style.position = 'absolute';
+      canvas.style.left = 0;
+      canvas.style.top = 0;
+      canvas.width = matterContainer.clientWidth * devicePixelRatio;
+      canvas.height = matterContainer.clientHeight * devicePixelRatio;
+      canvas.style.width = `${matterContainer.clientWidth}px`;
+      canvas.style.height = `${matterContainer.clientHeight}px`;
+      matterContainer.appendChild(canvas);
+
+      const engine = Engine.create();
+      const world = engine.world;
+      const render = Render.create({
+        canvas: canvas,
+        engine: engine,
+        options: {
+          width: matterContainer.clientWidth,
+          height: matterContainer.clientHeight,
+          background: "transparent",
+          wireframes: false,
+          showAngleIndicator: false,
+          pixelRatio: devicePixelRatio,
+        }
+      });
+  
+      Render.run(render);
+      Runner.run(Runner.create(), engine);
+  
+      const wallPadding = 8;
+  
+      let ground = Bodies.rectangle(
+        matterContainer.clientWidth / 2,
+        matterContainer.clientHeight + THICCNESS / 2 - wallPadding,
+        27184,
+        THICCNESS,
+        { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0, 0)' } }
+      );
+  
+      let leftWall = Bodies.rectangle(
+        0 - THICCNESS / 2 + wallPadding,
+        matterContainer.clientHeight / 2,
+        THICCNESS,
+        matterContainer.clientHeight * 5,
+        {
+          isStatic: true,
+          render: { fillStyle: 'rgba(0, 0, 0, 0)' }
+        }
+      );
+  
+      let rightWall = Bodies.rectangle(
+        matterContainer.clientWidth + THICCNESS / 2 - wallPadding,
+        matterContainer.clientHeight / 2,
+        THICCNESS,
+        matterContainer.clientHeight * 5,
+        { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0, 0)' } }
+      );
+  
+      let topWall = Bodies.rectangle(
+        matterContainer.clientWidth / 2, 
+        -THICCNESS / 2 - 700, 
+        matterContainer.clientWidth + THICCNESS, 
+        THICCNESS, 
+        { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0, 0)' } }
+      );
+  
+        // add all of the bodies to the world
+      Composite.add(engine.world, [ground, leftWall, rightWall, topWall]);
+  
+      engine.gravity.y = 1 / devicePixelRatio;
+  
+      // Function to clear previous food bodies
+      function clearFoodBodies() {
+        foodBodies.forEach(body => {
+          Composite.remove(world, body); // Remove from the Matter.js world
+        });
+        foodBodies = []; // Reset the food bodies array
+      }
+  
+      function getFoodCount(month, day) {
+        let foodCountPerDay;
+  
+        // Scale food count based on month
+        if (month === 1) {
+          foodCountPerDay = 1 * day; // Month 1: 1, 2, 3, 4, 5, ...
+        } else if (month === 3) {
+          foodCountPerDay = 2 * day; // Month 3: 2, 4, 6, 8, 10, ...
+        } else if (month === 6) {
+          foodCountPerDay = 3 * day; // Month 6: 3, 6, 9, 12, 15, ...
+        } else if (month === 9) {
+          foodCountPerDay = 4 * day; // Month 9: 4, 8, 12, 16, 20, ...
+        } else if (month === 12) {
+          foodCountPerDay = 6 * day; // Month 12: 6, 12, 18, 24, 30, ...
+        } else {
+          foodCountPerDay = month * day; // Default scaling for other months
+        }
+
+        // Increase the food count by 30%
+        foodCountPerDay *= 1.30;
+  
+        return foodCountPerDay;
+      }
+  
+      function createFoodBodies(foodItems) {
+        // const daysPerWeek = parseInt(container.querySelector(".m-stf-calculator__switch-pack--week .m-stf-calculator__switch-pack__input:checked")?.value || 0);
+        const daysPerWeek = 7;
+        const months = parseInt(container.querySelector(".m-stf-calculator__switch-pack--months .m-stf-calculator__switch-pack__input:checked")?.value || 0);
+        const foodCount = getFoodCount(months, daysPerWeek);
+  
+  
+        // Determine the item size and max food count based on screen size
+        let size = 70; // Default size
+        let maxFoodItems = 42; // Default max for desktop
+        
+        // Adjust item size and max food items for mobile
+        if (window.innerWidth <= 420) {
+          size = 35;
+        } else if (window.innerWidth < 576) {
+          size = 40;
+        } else if (window.innerWidth < 680) {
+          size = 45;
+        } else if (window.innerWidth < 900) {
+          size = 50;
+        } else if (window.innerWidth < 1200) {
+          size = 60;
+        }
+  
+        // Limit the number of food items based on screen size and item size
+        // let limitedFoodCount = Math.min(foodCount, maxFoodItems);
+        let limitedFoodCount = foodCount;
+        let isSmall = foodItems[0].isSmallSize;
+        let isRectangular = foodItems[0].isRectangularShape;
+  
+        if (isSmall) {     
+          limitedFoodCount *= 5; 
+          size /= 2;  
+        }
+  
+        for (let i = lastFoodCount; i < limitedFoodCount; i++) {
+          const randomImage = foodItems[0].images[Math.floor(Math.random() * foodItems[0].images.length)];
+          const x = Math.random() * matterContainer.clientWidth;
+          const y = - (Math.random() * matterContainer.clientHeight); // Start falling from the top
+
+
+          let foodBody;
+          if(isRectangular) {
+            foodBody = Bodies.rectangle(x, y, size, size / 2, {
+              render: { sprite: { texture: randomImage, xScale: size / 300, yScale: size / 300 } },
+              friction: 0.4,
+              frictionAir: 0.01,
+              restitution: 0,
+              density: 0.5   
+            });
+          } else {
+            foodBody = Bodies.circle(x, y, size / 2.2, {
+              render: { sprite: { texture: randomImage, xScale: size / 375, yScale: size / 375 } },
+              friction: 0.4,              // surface interaction
+              frictionAir: 0.01,          // slow down
+              restitution: (isSmall && limitedFoodCount > 35) ? 0 :  0.3, // bounciness
+              density: 0.5             // weight to objects
+            });
+          }
+  
+          foodBodies.push(foodBody); // Add the body to the array
+          Composite.add(world, foodBody); // Add the body to the world.
+        }
+      }
+  
+      // Handle the weight calculation and update the food items accordingly
+      function calculate(calculateWeight) {
+        const selectedFoodIndex = foodSelect.value;
+        if (selectedFoodIndex === "") return;
+  
+        const food = foodData[selectedFoodIndex];
+        // const daysPerWeek = parseInt(container.querySelector(".m-stf-calculator__switch-pack--week .m-stf-calculator__switch-pack__input:checked")?.value || 0);
+        const daysPerWeek = 7;
+        const months = parseInt(container.querySelector(".m-stf-calculator__switch-pack--months .m-stf-calculator__switch-pack__input:checked")?.value || 0);
+        const totalDays = Math.ceil((daysPerWeek / 7) * months * 30);
+  
+        // Converted sugar
+        const totalSugar = 10 * totalDays;
+        const totalFiber = totalSugar;
+  
+        // Grams and pounds needed
+        const totalServings = 10 / food.solubleFiber;
+        const gramsPer10g = totalServings * 100;
+        const totalGrams = gramsPer10g * totalDays;
+        const totalPounds = totalGrams * 0.00220462;
+  
+        // Update the UI
+        const sugarNeeded = container.querySelector("#sugar-needed");
+        if(sugarNeeded) {
+          sugarNeeded.textContent = `${Number(totalSugar.toFixed(0)).toLocaleString()}g`;
+        }
+
+        const fiberNeeded = container.querySelector("#fiber-needed");
+        if(fiberNeeded) {
+          fiberNeeded.textContent = `${Number(totalFiber.toFixed(0)).toLocaleString()}g`;
+        }
+
+        // const poundsNeeded = container.querySelector("#pounds-needed");
+        // if(poundsNeeded) {
+        //   poundsNeeded.textContent = `${Number(totalPounds.toFixed(0)).toLocaleString()} lbs`;
+        // }
+
+        const poundsNeeded = container.querySelector("#pounds-needed");
+        if(poundsNeeded && calculateWeight) {
+          const pounds1Month = (totalPounds / months) * 1;
+          const pounds3Months = (totalPounds / months) * 3;
+          const pounds6Months = (totalPounds / months) * 6;
+          const pounds9Months = (totalPounds / months) * 9;
+          const pounds12Months = (totalPounds / months) * 12;
+
+          poundsNeeded.innerHTML = `
+            <div class="d-flex flex-column align-items-end">
+              <span class="pound-value">${Number(pounds1Month.toFixed(0)).toLocaleString()}</span>
+              <span class="pound-value">${Number(pounds3Months.toFixed(0)).toLocaleString()}</span>
+              <span class="pound-value">${Number(pounds6Months.toFixed(0)).toLocaleString()}</span>
+              <span class="pound-value">${Number(pounds9Months.toFixed(0)).toLocaleString()}</span>
+              <span class="pound-value">${Number(pounds12Months.toFixed(0)).toLocaleString()}</span> 
+            </div>
+
+            <span>lbs</span>
+          `;
+        }
+
+        const selectedFoodName = container.querySelectorAll('.food-name');
+        if(selectedFoodName) {
+          selectedFoodName.forEach(element => {
+            element.textContent = food.name;
+          });
+        }
+
+        const selectedSolubleFiber = container.querySelectorAll('.soluble-fiber');
+        if(selectedSolubleFiber) {
+          selectedSolubleFiber.forEach(element => {
+            element.textContent = food.solubleFiber;
+          });
+        }
+  
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              updateFoodCount(months, daysPerWeek, food);
+              observer.disconnect();
+            }
+          });
+        }, 
+        {
+          threshold: 0.2,
+        });
+
+        const calculatorResult = container.querySelectorAll(".m-stf-calculator__result");
+        if(calculatorResult.length > 0) {
+          calculatorResult.forEach(targetElement => {
+            observer.observe(targetElement);
+          });  
+        }
+      }
+  
+      // Function to handle food count updates
+      function updateFoodCount(months, daysPerWeek, food) {
+        // Check if the food count has changed
+        let newFoodCount = getFoodCount(months, daysPerWeek);
+  
+        if (food.isSmallSize) {
+          newFoodCount *= 5; 
+        }
+  
+        if (newFoodCount > lastFoodCount) {
+          // If the food count has increased, add new food items falling from the top
+          createFoodBodies([food]);
+        } else if (newFoodCount < lastFoodCount) {
+          // If the food count has decreased, remove some food items
+          for (let i = foodBodies.length - 1; i >= newFoodCount; i--) {
+            Composite.remove(world, foodBodies[i]);
+            foodBodies.splice(i, 1); // Also remove from the array to avoid memory leaks
+          }
+        }
+        
+        lastFoodCount = newFoodCount; // Update the last food count
+      }
+  
+      // Event listeners for change events to trigger the calculation
+      container.querySelectorAll(`.m-stf-calculator__switch-pack__input, #food-item-${sectionId}`).forEach((element, index) => {
+        element.addEventListener("change", (e) => {
+
+          if (element.matches('.m-stf-calculator__switch-pack__input')) {
+            container.style.setProperty('--span-index', index);
+            calculate(false);
+          } else {
+            calculate(true);
+          }
+        });
+      });
+  
+      // Food item change event
+      foodSelect.addEventListener("change", () => {
+        clearFoodBodies(); // Clear existing food items
+        lastFoodCount = 0; // Reset food count tracker
+        calculate(true); // Recalculate everything
+      });
+  
+      // Initialize calculation when the page loads
+      calculate(true);
+      calculatePoundValueHeight();
+  
+      
+      let mouse = Mouse.create(render.canvas);
+      let mouseConstraint = MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+          stiffness: 0.2,
+          render: {
+            visible: false
+          }
+        }
+      });
+  
+      Composite.add(world, mouseConstraint);
+  
+      // allow scroll through the canvas
+      mouseConstraint.mouse.element.removeEventListener(
+        "wheel",
+        mouseConstraint.mouse.mousewheel
+      );
+      mouseConstraint.mouse.element.removeEventListener(
+        "DOMMouseScroll",
+        mouseConstraint.mouse.mousewheel
+      );
+  
+      // allow scroll through the canvas on mobile
+      mouseConstraint.mouse.element.removeEventListener('touchstart', mouseConstraint.mouse.mousedown);
+      mouseConstraint.mouse.element.removeEventListener('touchmove', mouseConstraint.mouse.mousemove);
+      mouseConstraint.mouse.element.removeEventListener('touchend', mouseConstraint.mouse.mouseup);
+  
+      mouse.mousedown = function(event) {
+          var position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+              touches = event.changedTouches;
+  
+          if (touches) {
+              mouse.button = 0;
+          } else {
+              mouse.button = event.button;
+          }
+  
+          mouse.absolute.x = position.x;
+          mouse.absolute.y = position.y;
+          mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+          mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+          mouse.mousedownPosition.x = mouse.position.x;
+          mouse.mousedownPosition.y = mouse.position.y;
+          mouse.sourceEvents.mousedown = event;
+      };
+  
+      mouseConstraint.mouse.element.addEventListener('touchstart', mouseConstraint.mouse.mousedown, { passive: true });
+      mouseConstraint.mouse.element.addEventListener('touchmove', (e) => {
+        if (mouseConstraint.body) {
+          mouseConstraint.mouse.mousemove(e);
+        }
+      });
+      mouseConstraint.mouse.element.addEventListener('touchend', (e) => {
+        if (mouseConstraint.body) {
+          mouseConstraint.mouse.mouseup(e);
+        }
+      });
+  
+      // Change cursor when hovering over food items
+      Events.on(mouseConstraint, "mousemove", (event) => {
+        const mousePosition = mouse.position;
+        const hoveredBodies = Composite.allBodies(world).filter((body) =>
+          Matter.Bounds.contains(body.bounds, mousePosition)
+        );
+  
+        if (hoveredBodies.length > 0) {
+          canvas.style.cursor = "grab"; // Change cursor to grab
+        } else {
+          canvas.style.cursor = "default"; // Reset cursor
+        }
+      });
+  
+      let prevWidth = window.innerWidth;
+  
+      function handleResize(matterContainer) {
+        calculatePoundValueHeight();
+        // set canvas size to new values
+        render.canvas.width = matterContainer.clientWidth * devicePixelRatio;
+        render.canvas.height = matterContainer.clientHeight * devicePixelRatio;
+        render.canvas.style.width = `${matterContainer.clientWidth}px`;
+        render.canvas.style.height = `${matterContainer.clientHeight}px`;
+  
+        const wallPadding = 8;
+  
+        // reposition ground
+        Body.setPosition(
+          ground,
+          Vector.create(
+            matterContainer.clientWidth / 2,
+            matterContainer.clientHeight + THICCNESS / 2 - wallPadding
+          )
+        );
+  
+        // reposition right wall
+        Body.setPosition(
+          rightWall,
+          Vector.create(
+            matterContainer.clientWidth + THICCNESS / 2 - wallPadding,
+            matterContainer.clientHeight / 2
+          )
+        );
+  
+        let width = window.innerWidth;
+        if (width !== prevWidth) {
+            prevWidth = width;
+            
+            clearFoodBodies(); // Clear existing food items
+            lastFoodCount = 0; // Reset food count tracker
+            calculate(true); // Recalculate everything
+        }
+  
+      }
+  
+      handleResize(matterContainer);
+  
+      window.addEventListener("resize", () => handleResize(matterContainer));
+    };
+  
+    // Event listeners for change events
+    container.querySelectorAll(`.m-stf-calculator__switch-pack__input, #food-item-${sectionId}`).forEach(element => {
+      element.addEventListener("change", () => {
+        updateLabels();
+      });
+    });
+  
+    // Initialize
+    document.addEventListener("DOMContentLoaded", () => {
+      updateLabels();
+      initMatter();
+    });
+  }
+}
+
+// Initialize for the current section
+initSTFCalculator("{{ section.id }}");
+</script>
+
+<script>
+  // Update modal
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('stfCalculatorModal');
+    const modalDescription = document.getElementById('stfCalculatorDescription');
+
+    // Event listener for when the modal is about to be shown
+
+    if (modal) {
+      modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const buttonParent = button.closest('.m-stf-calculator__result');
+
+        // Reset modal content
+        modalDescription.innerHTML = '';
+        const descriptionElement = buttonParent.querySelector('.js-stf-calculator-description');
+        modalDescription.innerHTML = descriptionElement ? descriptionElement.innerHTML : '';
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "STF Calculator",
+  "tag": "section",
+  "class": "m-stf-calculator",
+  "settings": [
+    {
+      "type": "header",
+      "content": "TEXT SETTINGS"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section Title",
+      "default": "Eating enough healthy fiber in your diet is tough"
+    },
+    {
+      "type": "select",
+      "id": "section_title_tag",
+      "label": "Section Title Tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "textarea",
+      "id": "duration_instruction",
+      "label": "Duration Instruction",
+      "default": "By taking <span class='text-sky-blue'>Sugar-to-Fiber</span> everyday for"
+    },
+    {
+      "type": "textarea",
+      "id": "result_description",
+      "default": "your gut can produce as much <span class='text-sky-blue'>soluble fiber</span> as",
+      "label": "Result Description"
+    },
+    {
+      "type": "text",
+      "id": "modal_label",
+      "label": "Modal Label",
+      "default": "How we crunch the numbers"
+    },
+    {
+      "type": "textarea",
+      "id": "modal_description",
+      "label": "Modal Description",
+      "default": "That is <span id='sugar-needed'>300g</span> of sugar being converted to <span id='fiber-needed'>300g</span> of fiber. According to the USDA <span class='food-name'>food</span> contains <span class='soluble-fiber'>0.4</span> grams of soluble fiber per serving."
+    },
+    {
+      "type": "header",
+      "content": "DESKTOP SECTION PADDING"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 80
+    },
+    {
+      "type": "header",
+      "content": "MOBILE SECTION PADDING"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "STF Calculator"
+    }
+  ]
+}
+{% endschema %}
+
+{% comment %}
+  {% schema %}
+  {
+    "name": "STF Calculator",
+    "tag": "section",
+    "class": "m-stf-calculator",
+    "settings": [
+      {
+        "type": "header",
+        "content": "SECTION TITLE SETTINGS"
+      },
+      {
+        "type": "text",
+        "id": "section_title",
+        "label": "Section Title",
+        "default": "Let’s crunch the numbers"
+      },
+      {
+        "type": "select",
+        "id": "section_title_tag",
+        "label": "Section Title Tag",
+        "options": [
+          {
+            "value": "h1",
+            "label": "H1"
+          },
+          {
+            "value": "h2",
+            "label": "H2"
+          },
+          {
+            "value": "h3",
+            "label": "H3"
+          },
+          {
+            "value": "h4",
+            "label": "H4"
+          },
+          {
+            "value": "h5",
+            "label": "H5"
+          }
+        ],
+        "default": "h2"
+      },
+      {
+        "type": "header",
+        "content": "SECTION DESCRIPTION SETTINGS"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "description",
+        "default": "Most of us struggle to get enough soluble fiber from our daily diet. This “calculator” highlights how Sugar-to-Fiber can complement your healthy eating habits by conveniently transforming sugar into fiber. See how much fiber you could add to your diet without the extra roughage.",
+        "label": "Description"
+      },
+      {
+        "type": "header",
+        "content": "BUTTON SETTINGS"
+      },
+      {
+        "type": "text",
+        "id": "btn_label",
+        "label": "Button Label",
+        "default": "How it Works"
+      },
+      {
+        "type": "url",
+        "id": "btn_link",
+        "label": "Button Links",
+        "default": "/"
+      },
+      {
+        "type": "select",
+        "id": "btn_style",
+        "label": "Button Style",
+        "options": [
+          {
+            "value": "primary",
+            "label": "Primary"
+          },
+          {
+            "value": "secondary--dark",
+            "label": "Secondary Dark"
+          },
+          {
+            "value": "secondary--light",
+            "label": "Secondary Light"
+          },
+          {
+            "value": "blue",
+            "label": "Blue"
+          }
+        ],
+        "default": "secondary--dark"
+      },
+      {
+        "type": "textarea",
+        "id": "footer_note",
+        "label": "Footer Note",
+        "default": "According to the USDA <span class='food-name'>cabbage</span> contains <span class='soluble-fiber'>0.4</span> grams of soluble fiber per serving, but a single serving of Sugar-to-Fiber can convert as much of 10 grams of dietary sugar into 10 grams of levan fiber. Want to learn more?"
+      },
+      {
+        "type": "header",
+        "content": "DESKTOP SECTION PADDING"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 200,
+        "step": 2,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 80
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom",
+        "min": 0,
+        "max": 200,
+        "step": 2,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 80
+      },
+      {
+        "type": "header",
+        "content": "MOBILE SECTION PADDING"
+      },
+      {
+        "type": "range",
+        "id": "padding_top_mobile",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 56
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom_mobile",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 56
+      }
+    ],
+    "presets": [
+      {
+        "name": "STF Calculator"
+      }
+    ]
+  }
+  {% endschema %}
+{% endcomment %}
