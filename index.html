@@ -3,6 +3,7 @@
     text-align: center;
     margin: 10px;
     font-family: 'Lato';
+    height: 200vh;
   }
 
   #canvas {
@@ -25,129 +26,8 @@
     height: 100%;
   }
 
-  .btn,
-  .yotpo .yotpo-default-button,
-  .yotpo input[type='button'].yotpo-default-button,
-  .write-question-review-buttons-container .write-question-review-button {
-    --bs-btn-padding-x: 1rem;
-    --bs-btn-padding-y: 0.75rem;
-    color: white;
-    border: 0;
-    box-shadow: none;
-    border-radius: 0;
-    display: inline-block;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    line-height: 1;
-    text-transform: uppercase;
-    white-space: normal;
-    word-break: break-word;
-    gap: 0.5rem;
-    position: relative;
-    transition: 0.35s translate;
-  }
 
-  .btn:before,
-  .yotpo .yotpo-default-button:before,
-  .yotpo input[type='button'].yotpo-default-button:before,
-  .write-question-review-buttons-container .write-question-review-button:before {
-    content: '';
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2410/svg" viewBox="0 0 166 48" preserveAspectRatio="none"><path d="M1.41851 8.5351C1.94984 6.63911 0.877168 3.23009 2.12828 1.4377C2.46368 1.04791 3.27466 1.07437 3.96167 0.994115C5.89564 0.768185 8.02698 0.593763 9.98754 0.550528C19.0608 0.350441 28.2153 0.575425 37.2983 0.670226C44.5002 0.745394 51.7228 0.915046 58.922 0.930746C67.1184 0.94862 75.3587 1.18257 83.5467 0.930746C95.1184 0.57485 106.667 0.639915 118.245 0.451953C123.501 0.366638 128.76 0.475816 134.016 0.416747C141.163 0.336421 148.191 0.148817 155.327 0.578692C158.061 0.743413 160.724 0.990329 163.37 1.42362C163.858 1.5035 164.203 1.50294 164.441 1.75455C165.079 2.42935 164.741 3.55062 164.862 4.28934C165.232 6.56452 165.061 8.98181 164.719 11.253C164.262 14.2875 164.483 17.3366 164.071 20.3782C163.467 24.8433 162.678 29.2557 162.656 33.7421C162.639 37.1506 162.025 40.5891 160.762 43.9235C160.432 44.797 160.53 45.4162 159.008 45.4162C157.197 45.4162 155.588 45.4952 153.802 45.7331C148.437 46.4477 142.663 46.2844 137.197 46.5006C131.943 46.7083 126.758 47.2047 121.507 47.3455C117.868 47.443 114.249 47.6609 110.603 47.6905C106.609 47.7229 102.638 47.504 98.6531 47.3948C92.191 47.2177 85.7134 47.4613 79.2446 47.4441C65.8342 47.4084 52.2132 46.2458 38.9575 45.1628C34.8956 44.8309 30.8472 44.3482 26.7337 44.3038C21.3137 44.2452 15.9621 44.5357 10.564 44.7544C7.61209 44.874 4.67065 45.0516 1.80661 44.5361C1.63001 44.5043 0.709989 44.3754 0.627612 44.2052C0.373904 43.6809 0.639225 41.858 0.641913 41.3147C0.64774 40.1371 0.577177 38.847 0.551523 37.6695C0.524782 36.4421 0.757777 36.4408 0.563638 35.2208C0.274574 33.4041 0.3073 31.5647 0.132943 29.7428C-0.137996 26.9117 0.0609383 24.1211 0.247032 21.2935C0.39369 19.0651 0.263623 16.8335 0.376506 14.6045C0.479812 12.5646 0.854152 10.549 1.41851 8.5351Z" fill="transparent" /></svg>');
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    background-color: var(--neutral-900-a25);
-    inset: 0;
-    z-index: 0;
-    left: 0;
-    top: 0;
-    translate: 0.5rem 0.5rem;
-    transition: 0.35s translate;
-  }
 
-  .btn-secondary {
-    padding-inline: 1rem;
-    padding-block: 0.75rem;
-    color: black;
-    border: 0;
-    box-shadow: none;
-    border-radius: 0;
-    display: inline-block;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    line-height: 1;
-    text-transform: uppercase;
-    background-color: transparent;
-    white-space: normal;
-    word-break: break-word;
-    gap: 0.5rem;
-    position: relative;
-    transition: 0.35s translate;
-  }
-
-  .btn-secondary:after {
-    content: '';
-    mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2410/svg"  viewBox="0 0 172 52" fill="none" preserveAspectRatio="none"><path d="M3.35274 10.3352C3.88426 8.41469 2.77474 4.96161 4.03978 3.14605C4.37936 2.75122 5.20536 2.77803 5.90458 2.69673C7.87289 2.46788 10.0425 2.2912 12.0388 2.24741C21.2776 2.04474 30.6011 2.27263 39.8513 2.36866C47.1858 2.4448 54.5417 2.61664 61.8731 2.63254C70.22 2.65065 78.6128 2.88763 86.9497 2.63254C98.732 2.27205 110.493 2.33795 122.283 2.14756C127.634 2.06114 132.99 2.17173 138.342 2.1119C145.62 2.03054 152.777 1.84051 160.045 2.27594C162.83 2.44279 165.544 2.6929 168.24 3.13179C168.737 3.2127 169.089 3.21213 169.332 3.467C169.985 4.15051 169.648 5.28629 169.774 6.03455C170.162 8.33914 170 10.7877 169.663 13.0882C169.213 16.1619 169.454 19.2505 169.05 22.3314C168.457 26.8542 167.676 31.3236 167.676 35.8681C167.676 39.3205 167.068 42.8035 165.799 46.1811C165.467 47.0658 165.569 47.6931 164.02 47.6931C162.176 47.6931 160.538 47.773 158.72 48.014C153.261 48.7378 147.379 48.5725 141.814 48.7914C136.464 49.0019 131.187 49.5047 125.841 49.6472C122.135 49.7461 118.45 49.9667 114.738 49.9967C110.671 50.0295 106.626 49.8078 102.567 49.6972C95.9859 49.5178 89.3906 49.7645 82.803 49.7471C69.1464 49.711 55.2696 48.5333 41.7652 47.4363C37.6271 47.1001 33.5019 46.6112 29.3127 46.5662C23.793 46.5069 18.3446 46.8011 12.8485 47.0226C9.84307 47.1438 6.84855 47.3237 3.92936 46.8015C3.74936 46.7693 2.8118 46.6388 2.72706 46.4663C2.46605 45.9353 2.72706 44.0888 2.72706 43.5385C2.72706 42.3456 2.6487 41.0389 2.61664 39.8462C2.58322 38.6029 2.82049 38.6016 2.61664 37.3658C2.31312 35.5257 2.33718 33.6625 2.15044 31.817C1.86026 28.9493 2.04879 26.1227 2.22405 23.2585C2.36217 21.0013 2.21847 18.7409 2.3222 16.4831C2.41712 14.4168 2.78817 12.3751 3.35274 10.3352Z" stroke="%23413D39" stroke-width="3" stroke-linecap="round"/></svg>');
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    background-color: #413d39;
-    inset: 0;
-    z-index: 0;
-    left: 0;
-    top: 0;
-    transition: 0.35s background-color;
-  }
-
-  .btn span,
-  .yotpo .yotpo-default-button span,
-  .yotpo input[type='button'].yotpo-default-button span,
-  .write-question-review-buttons-container .write-question-review-button span {
-    position: relative;
-    z-index: 1;
-  }
-
-  .btn svg,
-  .yotpo .yotpo-default-button svg,
-  .yotpo input[type='button'].yotpo-default-button svg,
-  .write-question-review-buttons-container .write-question-review-button svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .btn:hover,
-  .btn:focus,
-  .btn:active,
-  .btn:first-child:active,
-  .yotpo .yotpo-default-button:hover,
-  .yotpo .yotpo-default-button:focus,
-  .yotpo .yotpo-default-button:active,
-  .yotpo .yotpo-default-button:first-child:active,
-  .yotpo input[type='button'].yotpo-default-button:hover,
-  .yotpo input[type='button'].yotpo-default-button:focus,
-  .yotpo input[type='button'].yotpo-default-button:active,
-  .yotpo input[type='button'].yotpo-default-button:first-child:active,
-  .write-question-review-buttons-container .write-question-review-button:hover,
-  .write-question-review-buttons-container .write-question-review-button:focus,
-  .write-question-review-buttons-container .write-question-review-button:active,
-  .write-question-review-buttons-container .write-question-review-button:first-child:active {
-    color: var(--bs-text-primary-inverse);
-    text-decoration: none;
-    background-color: rgba(0, 0, 0, 0);
-    box-shadow: none;
-  }
 </style>
 
 <h1>Creating Stacks in Matter.js</h1>
@@ -190,18 +70,21 @@
     },
   });
   const getRandomAngle = () => {
-    const minMaxAngle = 15;
+    const minMaxAngle = 10;
     const type = Math.random() < 0.5 ? -1 : 1;
     return (Math.random() * 10 - minMaxAngle) * type * (Math.PI / 180);
   };
+  const wall = [];
 
   const createObject = () => {
-    const no_of_Rows = Math.floor((window.innerWidth + 300) / 220);
-    const no_of_Plate = 5;
+    const image_width = 501;
+    const image_height = 201;
     const width_of_palte = 241;
+    const no_of_Rows = Math.floor(window.innerWidth / width_of_palte) + 1;
+    const no_of_Plate = 5;
     const width_of_Wall = 210;
     const height_of_plate = 60;
-    const row_gap = (window.innerWidth + 300 - 220 * no_of_Rows) / no_of_Rows;
+    const row_gap = (window.innerWidth + 300 - width_of_palte * no_of_Rows) / no_of_Rows;
     let i = 0;
     const stack = Composites.stack(-50, -600, no_of_Rows, no_of_Plate, row_gap, 0, (x, y) => {
       let sprite = {
@@ -259,7 +142,7 @@
     matterContainer.clientHeight / 2,
     40,
     matterContainer.clientHeight * 5,
-    { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0.5)' } }
+    { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0)' } }
   );
 
   const world = engine.world;
@@ -291,8 +174,9 @@
   Composite.add(world, mouseConstraint);
 
   // allow scroll through the canvas
-  mouseConstraint.mouse.element.removeEventListener('wheel', mouseConstraint.mouse.mousewheel);
-  mouseConstraint.mouse.element.removeEventListener('DOMMouseScroll', mouseConstraint.mouse.mousewheel);
+mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
+mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
+
 
   // allow scroll through the canvas on mobile
   mouseConstraint.mouse.element.removeEventListener('touchstart', mouseConstraint.mouse.mousedown);
@@ -345,4 +229,6 @@
   });
 
   createObject();
+
+
 </script>
