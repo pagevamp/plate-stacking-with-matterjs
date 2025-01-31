@@ -25,9 +25,6 @@
     width: 100%;
     height: 100%;
   }
-
-
-
 </style>
 
 <h1>Creating Stacks in Matter.js</h1>
@@ -40,6 +37,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
 <script>
+  // const devicePixelRatio = isAndroid ? Math.min(window.devicePixelRatio, 2) : window.devicePixelRatio || 1;
+
   const addButton = document.querySelector('#add-button');
   const matterContainer = document.querySelector('#canvas');
   const canvas = document.createElement('canvas');
@@ -67,6 +66,7 @@
       wireframes: false,
       width: matterContainer.clientWidth,
       height: matterContainer.clientHeight,
+      pixelRatio: devicePixelRatio,
     },
   });
   const getRandomAngle = () => {
@@ -108,16 +108,7 @@
     });
     const bodies = Composite.allBodies(stack);
     bodies.sort((a, b) => b.position.y - a.position.y);
-    //No Walls
-    // const walls = Composites.stack(-55, 0, no_of_Rows + 1, 1, width_of_Wall, 0, function (x, y) {
-    //   return Bodies.rectangle(x, y, 2, matterContainer.clientHeight * 2, {
-    //     isStatic: true,
-    //     render: {
-    //       fillStyle: 'rgba(0,0,0,)',
-    //     },
-    //   });
-    // });
-    // Composite.add(engine.world, walls);
+
 
     Composite.add(engine.world, bodies);
   };
@@ -174,9 +165,8 @@
   Composite.add(world, mouseConstraint);
 
   // allow scroll through the canvas
-mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
-mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
-
+  mouseConstraint.mouse.element.removeEventListener('mousewheel', mouseConstraint.mouse.mousewheel);
+  mouseConstraint.mouse.element.removeEventListener('DOMMouseScroll', mouseConstraint.mouse.mousewheel);
 
   // allow scroll through the canvas on mobile
   mouseConstraint.mouse.element.removeEventListener('touchstart', mouseConstraint.mouse.mousedown);
@@ -229,6 +219,4 @@ mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstra
   });
 
   createObject();
-
-
 </script>

@@ -37,6 +37,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
 <script>
+  // const devicePixelRatio = isAndroid ? Math.min(window.devicePixelRatio, 2) : window.devicePixelRatio || 1;
+
   const addButton = document.querySelector('#add-button');
   const matterContainer = document.querySelector('#canvas');
   const canvas = document.createElement('canvas');
@@ -64,14 +66,15 @@
       wireframes: false,
       width: matterContainer.clientWidth,
       height: matterContainer.clientHeight,
+      pixelRatio: devicePixelRatio,
     },
   });
   const getRandomAngle = () => {
-    const minMaxAngle = 10;
+    const minMaxAngle = 5;
     const type = Math.random() < 0.5 ? -1 : 1;
     return (Math.random() * 10 - minMaxAngle) * type * (Math.PI / 180);
   };
-  const walls = [];
+  const wall = [];
 
   const createObject = () => {
     const image_width = 501;
@@ -81,28 +84,31 @@
     const no_of_Plate = 5;
     const width_of_Wall = 210;
     const height_of_plate = 60;
-    const row_gap = (window.innerWidth + 300 - width_of_palte * no_of_Rows) / no_of_Rows;
+    const row_gap = 30;
+    const thickness_of_wall = 10;
+    const walls = [];
     let i = 0;
-    const stack = Composites.stack(-50, -600, no_of_Rows, no_of_Plate, row_gap, 0, (x, y) => {
+
+    const stack = Composites.stack(-100, -600, no_of_Rows, no_of_Plate, row_gap, 0, (x, y) => {
       let sprite = {
         texture: '\plate.webp', // Replace with your image path
         xScale: 0.5,
         yScale: 0.5,
         yOffset: 0.1,
       };
-      if (i < no_of_Rows) {
-        let wallpostition = x + width_of_palte + row_gap / 2;
-      }
-      i++;
-      let wall = Bodies.rectangle(wallpostition, 0, 2, matterContainer.clientHeight * 2, {
-        isStatic: true,
-        render: {
-          fillStyle: 'rgba(0,0,0,.1)',
-        },
-      });
-      walls.push(wall);
+      const gap = row_gap / 2 + 2;
 
-      return Bodies.rectangle(x, y, 2, matterContainer.clientHeight * 2, {
+      if (i++ < no_of_Rows) {
+        let wall = Bodies.rectangle(x - gap, 0, thickness_of_wall, matterContainer.clientHeight * 4, {
+          isStatic: true,
+          render: {
+            fillStyle: 'rgba(0,0,0,0)',
+          },
+        });
+        walls.push(wall);
+      }
+
+      return Bodies.rectangle(x, y, width_of_palte, height_of_plate / 2, {
         isStatic: false,
         angle: getRandomAngle(),
         render: {
@@ -116,15 +122,7 @@
     });
     const bodies = Composite.allBodies(stack);
     bodies.sort((a, b) => b.position.y - a.position.y);
-    //No Walls
-    // const walls = Composites.stack(-55, 0, no_of_Rows + 1, 1, width_of_Wall, 0, function (x, y) {
-    //   return Bodies.rectangle(x, y, 2, matterContainer.clientHeight * 2, {
-    //     isStatic: true,
-    //     render: {
-    //       fillStyle: 'rgba(0,0,0,)',
-    //     },
-    //   });
-    // });
+
     Composite.add(engine.world, walls);
 
     Composite.add(engine.world, bodies);
