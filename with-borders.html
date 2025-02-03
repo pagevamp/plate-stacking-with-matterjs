@@ -29,7 +29,6 @@
 </style>
 
 <h1>Creating Stacks in Matter.js</h1>
-<button id="add-button" class="btn-secondary"><span> Click This to Add Plates </span></button>
 <div class="test" id="canvas">
   <div class="background">
     <img src="background.webp" alt="" />
@@ -165,7 +164,6 @@
     // run the engine
     Runner.run(runner, engine);
 
-    addButton.addEventListener('click', createPlates);
 
     const setupMouse = () => {
       let mouse = Mouse.create(render.canvas);

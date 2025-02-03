@@ -29,7 +29,6 @@
 </style>
 
 <h1>Creating Stacks in Matter.js</h1>
-<button id="add-button" class="btn-secondary"><span> Click This to Add Plates </span></button>
 <div class="test" id="canvas"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
@@ -38,7 +37,6 @@
     const isAndroid = /Android/i.test(navigator.userAgent);
     const devicePixelRatio = isAndroid ? Math.min(window.devicePixelRatio, 2) : window.devicePixelRatio || 1;
 
-    const addButton = document.querySelector('#add-button');
     const matterContainer = document.querySelector('#canvas');
     let plateStack = null;
 
@@ -144,7 +142,6 @@
     // run the engine
     Runner.run(runner, engine);
 
-    addButton.addEventListener('click', createPlates);
 
     const setupMouse = () => {
       let mouse = Mouse.create(render.canvas);
