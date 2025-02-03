@@ -245,31 +245,26 @@
       render.canvas.style.width = `${matterContainer.clientWidth}px`;
       render.canvas.style.height = `${matterContainer.clientHeight}px`;
 
-      let width = window.innerWidth;
-      if (width !== prevWidth) {
-        prevWidth = width;
-        Body.setPosition(
-          ground,
-          Vector.create(
-            matterContainer.clientWidth / 2 - 241,
-            matterContainer.clientHeight + 50,
-            matterContainer.clientHeight + 50,
-            matterContainer.clientWidth * 2 + 400,
-            100,
-            { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0.5)' }, angle: '-0.013' }
-          )
-        );
-        Body.setPosition(leftWall, Vector.create(-241, matterContainer.clientHeight / 2));
-        Body.setPosition(rightWall, Vector.create(matterContainer.clientWidth + 241, matterContainer.clientHeight / 2));
-        const no_of_Plate = 5;
-        let startPlateHeight = matterContainer.clientHeight - 60 * no_of_Plate;
-        clearPlatesAndWalls();
-        createPlates(startPlateHeight);
-      }
+      Body.setPosition(
+        ground,
+        Vector.create(
+          matterContainer.clientWidth / 2 - 241,
+          matterContainer.clientHeight + 50,
+          matterContainer.clientHeight + 50,
+          matterContainer.clientWidth * 2 + 400,
+          100,
+          { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0.5)' }, angle: '-0.013' }
+        )
+      );
+      Body.setPosition(leftWall, Vector.create(-241, matterContainer.clientHeight / 2));
+      Body.setPosition(rightWall, Vector.create(matterContainer.clientWidth + 241, matterContainer.clientHeight / 2));
+      const no_of_Plate = 5;
+      let startPlateHeight = matterContainer.clientHeight - 60 * no_of_Plate;
+      clearPlatesAndWalls();
+      createPlates(startPlateHeight);
     };
 
     setupMouse();
-
     createPlates();
     window.addEventListener('resize', () => handleResize(matterContainer));
   };
