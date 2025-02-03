@@ -134,7 +134,7 @@
     let ground = Bodies.rectangle(
       matterContainer.clientWidth / 2 - 241,
       matterContainer.clientHeight + 50,
-      matterContainer.clientWidth * 2 + 400,
+      matterContainer.clientWidth + 800,
       100,
       { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0)' }, angle: '-0.013' }
     );
@@ -224,16 +224,10 @@
       });
     };
 
-    const clearPlatesAndWalls = () => {
+    const clearPlates = () => {
       if (plateStack) {
         Composite.remove(world, plateStack);
         plateStack = null;
-      }
-      if (walls) {
-        walls.forEach((wall) => {
-          Composite.remove(world, wall);
-        });
-        walls = [];
       }
     };
     let prevWidth = window.innerWidth;
@@ -254,7 +248,7 @@
             matterContainer.clientWidth / 2 - 241,
             matterContainer.clientHeight + 50,
             matterContainer.clientHeight + 50,
-            matterContainer.clientWidth * 2 + 400,
+            matterContainer.clientWidth + 800,
             100,
             { isStatic: true, render: { fillStyle: 'rgba(0, 0, 0,0.5)' }, angle: '-0.013' }
           )
@@ -263,7 +257,7 @@
         Body.setPosition(rightWall, Vector.create(matterContainer.clientWidth + 241, matterContainer.clientHeight / 2));
         const no_of_Plate = 5;
         let startPlateHeight = matterContainer.clientHeight - 60 * no_of_Plate;
-        clearPlatesAndWalls();
+        clearPlates();
         createPlates(startPlateHeight);
       }
     };
