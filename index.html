@@ -8,7 +8,7 @@
 
   #canvas {
     width: 100vw;
-    height: 100vh;
+    height: 80vh;
     background-color: transparent;
     position: relative;
   }
@@ -30,11 +30,7 @@
 
 <h1>Creating Stacks in Matter.js</h1>
 <button id="add-button" class="btn-secondary"><span> Click This to Add Plates </span></button>
-<div class="test" id="canvas">
-  <div class="background">
-    <img src="background.webp" alt="" />
-  </div>
-</div>
+<div class="test" id="canvas"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
 <script>
@@ -68,7 +64,7 @@
       canvas: canvas,
       engine: engine,
       options: {
-        background: 'transparent',
+        background: 'rgba(0,0,0,0)',
         wireframes: false,
         width: matterContainer.clientWidth,
         height: matterContainer.clientHeight,
